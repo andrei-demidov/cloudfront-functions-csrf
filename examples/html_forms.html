@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+<body>
+
+<h1>Adding CSRF tokens to HTML forms</h1>
+
+<p>A query string parameter <i>csrf_token</i> is automatically added to every POST form on this page before it is submitted. The token value is retrieved from the cookies.</p>
+
+<p>Should the CSRF token be invalid, the request will be terminated at the edge and the client will receive HTTP 403.</p>
+
+<h2>First form</h2>
+
+<form action="/" method="POST">
+    <input type="text" placeholder="Some text field">
+    <input type="submit" value="Submit first form">
+</form>
+
+<h2>Second form</h2>
+
+<form action="/" method="POST">
+    <input type="text" name="field_name" placeholder="Some other text field">
+    <input type="submit" value="Submit second form">
+</form>
+
+<script>
+// The name of the cookie that contains the token.
+const csrfTokenCookieName = "__Host-csrf_token";
+// The name of the csrf url query parameter.
+const csrfTokenQuerystringName = "csrf_token";
+// The function that retrieves the CSRF token value from the cookies. 
+function getCsrfToken() {
+    return document.cookie
+    .split("; ")
+    .find((row) => row.startsWith(`${csrfTokenCookieName}=`))
+    ?.split("=")[1];
+}
+window.addEventListener("DOMContentLoaded", () => {
+    // Adding the CSRF token to each form on this page before they are submitted
+    document.querySelectorAll("form[method=POST]").forEach(function(form) {
+        form.addEventListener("submit", () => {
+            const token = getCsrfToken();
+            if (token) {
+                form.action = `${form.action}?${csrfTokenQuerystringName}=${token}`;
+            } else {
+                alert("The CSRF token cookie is missing.");
+            }
+        });
+    });
+});
+</script>
+
+</body>
+</html>

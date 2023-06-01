@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html>
+<body>
+
+<h1>Adding CSRF tokens to JavaScript requests</h1>
+
+<p>A header <i>x-csrf-token</i> is added to the <i>fetch</i> POST requests that send the data to the server. The token value is retrieved from the cookies.</p>
+
+<p>Should the CSRF token be invalid, the request will be terminated at the edge and the client will receive HTTP 403.</p>
+
+<h2>First form</h2>
+
+<form action="/" method="POST">
+    <input type="text" name="field_name" placeholder="Some text field">
+    <input type="submit" value="Submit first form with JS fetch">
+</form>
+
+<h2>Second form</h2>
+
+<form action="/" method="POST">
+    <input type="text" name="field_name" placeholder="Some other text field">
+    <input type="submit" value="Submit second form with JS fetch">
+</form>
+
+<script>
+// The name of the cookie that contains the token.
+const csrfTokenCookieName = "__Host-csrf_token";
+// The name of the csrf header parameter.
+const csrfTokenHeaderName = "x-csrf-token";
+// The function that retrieves the CSRF token value from the cookies.
+function getCsrfToken() {
+    return document.cookie
+    .split("; ")
+    .find((row) => row.startsWith(`${csrfTokenCookieName}=`))
+    ?.split("=")[1];
+}
+window.addEventListener("DOMContentLoaded", () => {    
+    document.querySelectorAll("form[method=POST]").forEach(function(form) {
+        form.addEventListener("submit", async (event) => {
+            // Preventing the form from being submitted
+            event.preventDefault();
+            const token = getCsrfToken();
+            if (token) {
+                // Converting form fields to JSON
+                // https://www.learnwithjason.dev/blog/get-form-values-as-json
+                // This approach won't work with multi-select values like checkboxes
+                const formData = new FormData(event.target);
+                const formDataJson = Object.fromEntries(formData.entries());
+                // Sending the request with a custom header that contains the CSRF token
+                const response = await fetch(form.action, {
+                    method: "POST",
+                    headers: {
+                        [csrfTokenHeaderName]: token
+                    },
+                    body: JSON.stringify(formDataJson)
+                });
+                if (response.ok) { // HTTP 200-299
+                    alert("Successfully sent!");
+                } else {
+                    alert("HTTP Error: " + response.status);
+                }
+            } else {
+                alert("The CSRF token cookie is missing.");
+            }
+        });
+    });
+});
+</script>
+
+</body>
+</html>
