@@ -43,7 +43,7 @@ The CloudFront functions now set and validate the CSRF tokens and the last thing
 
 Add the following code to all pages that contain HTML forms. Should the CSRF token be invalid, the request will be terminated at the edge and the client will receive HTTP 403.
 
-```
+```javascript
 <script>
 // The name of the cookie that contains the token.
 const csrfTokenCookieName = "__Host-csrf_token";
@@ -76,7 +76,7 @@ window.addEventListener("DOMContentLoaded", () => {
 
 Add the following code to all pages that send "unsafe" requests with JavaScript:
 
-```
+```javascript
 <script>
 // The name of the cookie that contains the token.
 const csrfTokenCookieName = "__Host-csrf_token";
